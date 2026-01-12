@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Joob</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Orbitron:wght@500;700;900&family=VT323&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <style>
+    /* ========================================= */
+    /* 1. RESET & GLOBAL STYLES */
+    /* ========================================= */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      background: #000000;
+      color: #F0F0F0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0;
+      position: relative; 
+      overflow-x: hidden; 
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #000; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+
+    .app-wrapper {
+        width: 100%;
+        max-width: 450px;
+        min-height: 100vh;
+        position: relative;
+        z-index: 10;
+        padding: 90px 20px 20px 20px;
+    }
+
+    /* ========================================= */
+    /* 2. HEADER GLOBAL (UPDATED) */
+    /* ========================================= */
+    .custom-header {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 70px;
+        background: #000; border-bottom: 1px solid #222;
+        display: flex; align-items: center; justify-content: space-between; /* Updated */
+        padding: 0 20px; z-index: 100;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+    }
+
+    .header-left { display: flex; align-items: center; gap: 15px; }
+
+    #headerToggleBtn {
+        background: none; border: none; color: #fff;
+        font-size: 24px; cursor: pointer;
+    }
+
+    .header-title {
+        font-family: 'Orbitron', sans-serif; font-size: 20px;
+        font-weight: 700; color: #fff; letter-spacing: 1px;
+    }
+
+    /* Message Button Style */
+    #headerMsgBtn {
+        background: none; border: none; color: #fff;
+        font-size: 22px; cursor: pointer; position: relative;
+    }
+    .msg-badge {
+        position: absolute; top: -5px; right: -5px;
+        background: #ff0050; color: #fff; font-size: 10px;
+        font-weight: bold; padding: 2px 6px; border-radius: 50%;
+        border: 1px solid #000; display: none;
+    }
+
+    /* ========================================= */
+    /* 3. SIDEBAR */
+    /* ========================================= */
+    #sidebarPanel {
+        position: fixed; top: 0; left: 0; width: 280px; height: 100vh;
+        background: #000; border-right: 1px solid #222; z-index: 1600; 
+        transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex; flex-direction: column; overflow-y: auto; 
+    }
+    #sidebarPanel.active { transform: translateX(0); }
+    .sidebar-header-new { position: relative; width: 100%; height: 180px; overflow: hidden; border-bottom: 1px solid #222; flex-shrink: 0; }
+    .sidebar-banner-img { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; }
+    .sidebar-text-overlay { position: absolute; bottom: 20px; left: 20px; z-index: 2; }
+    .sidebar-main-text { font-family: 'Orbitron', sans-serif; font-size: 28px; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 1px; text-shadow: 2px 2px 0px #000; line-height: 1; margin-bottom: 5px; }
+    .sidebar-sub-text { font-family: 'VT323', monospace; font-size: 18px; color: #ccc; text-transform: uppercase; background: rgba(0,0,0,0.5); padding: 2px 5px; display: inline-block; }
+    .sidebar-menu { padding: 20px 0; display: flex; flex-direction: column; flex: 1; }
+    .sidebar-btn { background: transparent; border: none; color: #fff; padding: 12px 25px; text-align: left; font-family: 'VT323', monospace; font-size: 20px; cursor: pointer; display: flex; align-items: center; gap: 15px; transition: all 0.2s ease; text-transform: capitalize; }
+    .sidebar-btn i { width: 20px; text-align: center; font-size: 16px; color: #fff; }
+    .sidebar-btn:hover { background: rgba(255,255,255,0.05); padding-left: 30px; }
+    .sidebar-credits { padding: 20px 25px; margin-top: 20px; border-top: 1px solid #333; }
+    .credit-title { font-family: 'Orbitron', sans-serif; font-size: 14px; color: #fff; margin-bottom: 10px; font-weight: bold; }
+    .credit-row { font-family: 'VT323', monospace; font-size: 16px; color: #aaa; margin-bottom: 5px; display: block; }
+    .credit-small { font-family: 'Rajdhani', sans-serif; font-size: 10px; color: #555; margin-top: 10px; display: block; }
+
+    /* ========================================= */
+    /* 4. DASHBOARD STYLES */
+    /* ========================================= */
+    .dashboard-page { display: none; animation: fadeIn 0.4s ease; }
+    .dashboard-page.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .dash-logo-container { text-align: center; margin-bottom: 30px; margin-top: 10px; }
+    .dash-logo-img { width: 80px; height: 80px; border-radius: 15px; border: 2px solid #fff; object-fit: cover; }
+    .dash-logo-text { font-family: 'Orbitron', sans-serif; font-size: 18px; letter-spacing: 2px; margin-top: 10px; color: #fff; text-transform: uppercase; }
+    .dash-version { font-size: 10px; color: #888; letter-spacing: 3px; }
+
+    .info-card-wrap { position: relative; width: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 30px; border: 1px solid #333; min-height: 200px; }
+    .card-video-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+    .card-video-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 1; }
+    .info-card-content { position: relative; z-index: 2; padding: 30px 20px; }
+    .info-list-item { display: flex; align-items: center; margin-bottom: 18px; color: #fff; font-size: 15px; font-weight: 600; letter-spacing: 1px; }
+    .info-list-item:last-child { margin-bottom: 0; }
+    .info-icon { width: 25px; text-align: center; margin-right: 10px; font-size: 16px; color: #fff; }
+    .info-label { width: 100px; color: #ccc; font-weight: bold; }
+    .info-value { color: #fff; flex: 1; text-align: right; font-family: 'Rajdhani', sans-serif; }
+
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px; }
+    .stat-item { text-align: center; padding: 10px; }
+    .stat-icon { font-size: 24px; color: #fff; margin-bottom: 8px; }
+    .stat-val-big { font-size: 16px; font-weight: bold; color: #fff; font-family: 'Orbitron', sans-serif; margin-bottom: 2px;}
+    .stat-label-small { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+    .stat-icon.blue { color: #00e5ff; }
+    .stat-icon.shield { color: #fff; } 
+    .stat-icon.orange { color: #ff6d00; }
+    .countdown-wrap { text-align: center; margin-top: 10px; }
+
+    /* ========================================= */
+    /* 5. MY INFO (CARD UI + LOGOUT) */
+    /* ========================================= */
+    .myinfo-card-container { background: #0f0f0f; border: 1px solid #333; border-radius: 20px; padding: 30px 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+    .myinfo-avatar { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; box-shadow: 0 0 20px rgba(255,255,255,0.2); margin-bottom: 15px; }
+    .myinfo-username { font-family: 'Orbitron', sans-serif; font-size: 22px; color: #fff; margin-bottom: 5px; letter-spacing: 1px; }
+    .myinfo-role-badge { display: inline-block; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); padding: 5px 15px; border-radius: 20px; font-family: 'Rajdhani', sans-serif; font-size: 14px; color: #00e5ff; font-weight: bold; margin-bottom: 25px; text-transform: uppercase; }
+    .myinfo-details-box { background: #080808; border: 1px solid #222; border-radius: 12px; padding: 20px; }
+    .myinfo-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #222; font-family: 'Rajdhani', sans-serif; }
+    .myinfo-row:last-child { border-bottom: none; }
+    .myinfo-lbl { color: #888; font-size: 14px; font-weight: 600; }
+    .myinfo-val { color: #fff; font-size: 16px; font-weight: 700; text-align: right; }
+    .pass-reveal { font-family: 'VT323', monospace; letter-spacing: 2px; color: #ff6d00; }
+
+    /* TOMBOL LOGOUT */
+    .btn-logout {
+        width: 100%; padding: 15px; margin-top: 20px;
+        background: linear-gradient(90deg, #ff0050, #990033);
+        border: none; border-radius: 8px; color: #fff;
+        font-family: 'Orbitron', sans-serif; font-weight: bold; font-size: 16px;
+        cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(255,0,80,0.3);
+    }
+    .btn-logout:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(255,0,80,0.5); }
+
+    /* ========================================= */
+    /* 6. GENERAL INPUT & BUTTON */
+    /* ========================================= */
+    .input-glow { width: 100%; padding: 15px; background: #000; border: 1px solid rgba(255,255,255,0.6); border-radius: 8px; color: #fff; font-family: 'Rajdhani', sans-serif; font-size: 16px; font-weight: 600; margin-bottom: 20px; outline: none; transition: 0.3s; box-shadow: 0 0 8px rgba(255,255,255,0.2); }
+    .input-glow:focus { border-color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.5); }
+    .btn-action { width: 100%; padding: 16px; background: #fff; color: #000; border: none; border-radius: 8px; font-family: 'Orbitron', sans-serif; font-weight: bold; font-size: 16px; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; box-shadow: 0 0 15px rgba(255,255,255,0.4); display: flex; justify-content: center; align-items: center; gap: 10px; }
+    .btn-action:hover { background: #e0e0e0; transform: translateY(-2px); }
+    textarea.input-glow { resize: vertical; min-height: 100px; }
+
+    /* ========================================= */
+    /* 7. MESSAGES PAGE STYLE (NEW) */
+    /* ========================================= */
+    .msg-list-container {
+        display: flex; flex-direction: column; gap: 15px; margin-top: 20px;
+    }
+    .msg-card {
+        background: #0f0f0f; border: 1px solid #333; border-radius: 12px;
+        padding: 15px; position: relative; overflow: hidden;
+    }
+    .msg-card.unread { border-left: 4px solid #76FF03; }
+    .msg-header { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #222; padding-bottom: 5px; }
+    .msg-sender { font-family: 'Orbitron'; color: #00e5ff; font-size: 14px; }
+    .msg-time { font-size: 12px; color: #777; }
+    .msg-content { font-family: 'Rajdhani'; color: #ddd; font-size: 15px; line-height: 1.4; }
+    .msg-reply-area { margin-top: 15px; display: none; }
+    .msg-reply-area.active { display: block; animation: fadeIn 0.3s; }
+    .btn-reply-send {
+        background: #00e5ff; color: #000; padding: 8px 15px; border: none;
+        border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 5px; float: right;
+    }
+
+    /* ========================================= */
+    /* 8. TOOLS & ATTACK (SAME AS BEFORE) */
+    /* ========================================= */
+    /* ... (CSS Attack & Tools sama seperti sebelumnya, tidak diubah) ... */
+    .attack-layout { text-align: center; margin-top: 20px; }
+    .attack-profile-container { margin-bottom: 25px; position: relative; display: inline-block; }
+    .attack-profile-pic { width: 130px; height: 130px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 40px rgba(0,0,0,0.9); border: 1px solid #333; filter: brightness(0.8); }
+    .attack-section-title { font-family: 'Orbitron', sans-serif; font-size: 20px; color: #fff; margin-bottom: 25px; text-transform: capitalize; text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); letter-spacing: 1px; }
+    .attack-input-group, .attack-dropdown-wrapper { width: 100%; margin-bottom: 25px; position: relative; }
+    .attack-input-style, .attack-dropdown-trigger { width: 100%; padding: 15px 20px; background: #0f0f0f; border: 1px solid #333; border-radius: 12px; color: #ccc; font-family: 'VT323', monospace; font-size: 20px; letter-spacing: 1px; outline: none; box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: 0.3s; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; height: 60px; }
+    .attack-input-style:focus, .attack-dropdown-trigger:hover { border-color: #666; color: #fff; background: #151515; }
+    .attack-input-style::placeholder { color: #666; font-family: 'Rajdhani', sans-serif; font-size: 16px; text-transform: none; letter-spacing: 0; }
+    .attack-dropdown-menu { position: absolute; top: 105%; left: 0; width: 100%; background: #0f0f0f; border: 1px solid #333; border-radius: 12px; overflow: hidden; max-height: 0; opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.9); }
+    .attack-dropdown-menu.active { max-height: 300px; opacity: 1; visibility: visible; top: 110%; }
+    .attack-option { padding: 15px 20px; border-bottom: 1px solid #222; color: #888; font-family: 'Rajdhani', sans-serif; font-size: 16px; font-weight: 600; cursor: pointer; text-transform: uppercase; transition: 0.2s; background: #0f0f0f; text-align: left; }
+    .attack-option:hover { background: #222; color: #fff; padding-left: 25px; }
+    .attack-option:last-child { border-bottom: none; }
+    .attack-submit-btn { width: 100%; padding: 15px; background: #FFFFFF; color: #000000; border: none; border-radius: 50px; font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 18px; cursor: pointer; text-transform: uppercase; display: flex; justify-content: center; align-items: center; gap: 10px; box-shadow: 0 0 15px rgba(255, 255, 255, 0.2); transition: 0.3s; position: relative; z-index: 1; height: 60px; }
+    .attack-submit-btn:hover { transform: scale(1.02); box-shadow: 0 0 25px rgba(255, 255, 255, 0.4); }
+    .attack-submit-btn i { font-size: 16px; }
+
+    .tools-header-area { text-align: center; margin-bottom: 25px; }
+    .tools-icon-main { font-size: 30px; color: #ff6d00; margin-bottom: 10px; display: inline-block; padding: 10px; border-radius: 50%; border: 2px solid #ff6d00; }
+    .tools-title-main { font-family: 'Orbitron', sans-serif; font-size: 24px; color: #fff; text-transform: uppercase; letter-spacing: 2px; }
+    .tools-subtitle-main { font-family: 'Rajdhani', sans-serif; font-size: 14px; color: #888; margin-top: 5px; }
+    .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .tool-card { background: #0d0d0d; border-radius: 20px; padding: 20px; position: relative; overflow: hidden; cursor: pointer; border: 1px solid #222; transition: transform 0.2s, border-color 0.2s; min-height: 180px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+    .card-cyan { background: linear-gradient(145deg, #0d0d0d, #1a1a1a); border: 1px solid #111; box-shadow: inset 0 0 20px rgba(0, 229, 255, 0.05); }
+    .card-cyan:hover { border-color: #00e5ff; transform: translateY(-3px); }
+    .card-cyan .tool-icon-circle { color: #00e5ff; background: rgba(0, 229, 255, 0.1); border: 1px solid rgba(0, 229, 255, 0.2); }
+    .card-cyan .tool-name { color: #00e5ff; }
+    .card-pink { background: linear-gradient(145deg, #0d0d0d, #1a1a1a); border: 1px solid #111; box-shadow: inset 0 0 20px rgba(255, 0, 80, 0.05); }
+    .card-pink:hover { border-color: #ff0050; transform: translateY(-3px); }
+    .card-pink .tool-icon-circle { color: #ff0050; background: rgba(255, 0, 80, 0.1); border: 1px solid rgba(255, 0, 80, 0.2); }
+    .card-pink .tool-name { color: #ff0050; }
+    .card-purple { background: linear-gradient(145deg, #0d0d0d, #1a1a1a); border: 1px solid #111; box-shadow: inset 0 0 20px rgba(157, 0, 255, 0.05); }
+    .card-purple:hover { border-color: #9d00ff; transform: translateY(-3px); }
+    .card-purple .tool-icon-circle { color: #9d00ff; background: rgba(157, 0, 255, 0.1); border: 1px solid rgba(157, 0, 255, 0.2); }
+    .card-purple .tool-name { color: #9d00ff; }
+    .card-orange { background: linear-gradient(145deg, #0d0d0d, #1a1a1a); border: 1px solid #111; box-shadow: inset 0 0 20px rgba(255, 61, 0, 0.05); }
+    .card-orange:hover { border-color: #ff3d00; transform: translateY(-3px); }
+    .card-orange .tool-icon-circle { color: #ff3d00; background: rgba(255, 61, 0, 0.1); border: 1px solid rgba(255, 61, 0, 0.2); }
+    .card-orange .tool-name { color: #ff3d00; }
+    .card-red { background: linear-gradient(145deg, #0d0d0d, #1a1a1a); border: 1px solid #111; box-shadow: inset 0 0 20px rgba(220, 20, 60, 0.05); }
+    .card-red:hover { border-color: #DC143C; transform: translateY(-3px); }
+    .card-red .tool-icon-circle { color: #DC143C; background: rgba(220, 20, 60, 0.1); border: 1px solid rgba(220, 20, 60, 0.2); }
+    .card-red .tool-name { color: #DC143C; }
+    .tool-icon-circle { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 15px; }
+    .tool-name { font-family: 'Orbitron', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 5px; }
+    .tool-desc { font-family: 'Rajdhani', sans-serif; font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* ========================================= */
+    /* 9. OTHER STYLES (Credits, Modal, etc) */
+    /* ========================================= */
+    .credits-wrapper { position: relative; height: 70vh; width: 100%; overflow: hidden; background: #050505; border-radius: 10px; border: 1px solid #222; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
+    .credits-wrapper::before, .credits-wrapper::after { content: ''; position: absolute; left: 0; width: 100%; height: 100px; z-index: 2; pointer-events: none; }
+    .credits-wrapper::before { top: 0; background: linear-gradient(to bottom, #050505, transparent); }
+    .credits-wrapper::after { bottom: 0; background: linear-gradient(to top, #050505, transparent); }
+    .credits-content { position: absolute; width: 100%; text-align: center; top: 100%; left: 0; animation: creditsScroll 20s linear infinite; }
+    @keyframes creditsScroll { 0% { top: 100%; } 100% { top: -150%; } }
+    .credit-section { margin-bottom: 50px; }
+    .cr-title { font-family: 'Orbitron', sans-serif; font-size: 24px; color: #ff6d00; font-weight: 900; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; }
+    .cr-name { font-family: 'Rajdhani', sans-serif; font-size: 20px; color: #fff; margin-bottom: 5px; font-weight: 600; }
+    .cr-role { font-family: 'VT323', monospace; font-size: 16px; color: #888; text-transform: uppercase; }
+
+    #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1500; display: none; backdrop-filter: blur(5px); }
+    #overlay.active { display: block; }
+    .popup-cool { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); background: #000; border: 2px solid #fff; padding: 25px; border-radius: 12px; text-align: center; z-index: 9999; display: none; box-shadow: 0 0 30px rgba(255,255,255,0.3); width: 85%; max-width: 350px; }
+    .popup-cool.show { display: block; animation: popIn 0.3s forwards; }
+    @keyframes popIn { to { transform: translate(-50%, -50%) scale(1); } }
+    .popup-icon { font-size: 40px; margin-bottom: 15px; display: block; }
+    .popup-msg { font-size: 18px; font-weight: bold; color: #fff; font-family: 'Orbitron', sans-serif; }
+    .loading-container { display: none; text-align: center; margin: 20px 0; }
+    .loading-container.active { display: block; }
+    .spinner { width: 40px; height: 40px; border: 4px solid #333; border-top: 4px solid #fff; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .nik-container { text-align: center; margin-top: 20px; }
+    .result-box { background: #111; border: 1px solid #fff; padding: 20px; border-radius: 10px; margin-top: 20px; text-align: left; display: none; box-shadow: 0 0 15px rgba(255,255,255,0.1); }
+    .result-box.active { display: block; animation: fadeIn 0.5s; }
+
+    .custom-select-wrapper { position: relative; width: 100%; margin-bottom: 20px; z-index: 20; }
+    .custom-select-trigger { position: relative; width: 100%; padding: 15px; background: #000; border: 1px solid rgba(255,255,255,0.6); border-radius: 8px; color: #fff; font-family: 'Rajdhani', sans-serif; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s; box-shadow: 0 0 8px rgba(255,255,255,0.2); display: flex; justify-content: space-between; align-items: center; }
+    .custom-select-trigger:after { content: '\f0d7'; font-family: 'Font Awesome 6 Free'; font-weight: 900; }
+    .custom-options { position: absolute; top: 110%; left: 0; right: 0; background: #111; border: 1px solid #444; border-radius: 8px; overflow: hidden; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.3s ease; z-index: 50; max-height: 250px; overflow-y: auto; }
+    .custom-select-wrapper.open .custom-options { opacity: 1; visibility: visible; transform: translateY(0); }
+    .custom-option { padding: 12px 15px; border-bottom: 1px solid #222; color: #aaa; cursor: pointer; transition: 0.2s; font-family: 'Rajdhani', sans-serif; }
+    .custom-option:last-child { border-bottom: none; }
+    .custom-option:hover { background: #9d00ff; color: #fff; padding-left: 20px; }
+
+    .account-list-container { margin-top: 30px; background: #0a0a0a; border: 1px solid #333; border-radius: 12px; overflow: hidden; }
+    .acc-list-header { display: grid; grid-template-columns: 1.5fr 1fr 1fr; padding: 12px 15px; background: #111; border-bottom: 1px solid #444; font-family: 'Orbitron', sans-serif; font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+    .acc-list-body { max-height: 250px; overflow-y: auto; }
+    .acc-list-item { display: grid; grid-template-columns: 1.5fr 1fr 1fr; padding: 12px 15px; border-bottom: 1px solid #222; font-family: 'Rajdhani', sans-serif; font-size: 14px; color: #ddd; align-items: center; }
+    .acc-role-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; background: #333; color: #aaa; text-transform: uppercase; display: inline-block; }
+    .role-owner { background: rgba(255, 215, 0, 0.2); color: #FFD700; border: 1px solid rgba(255, 215, 0, 0.3); }
+    .role-reseller { background: rgba(255, 165, 0, 0.2); color: #FFA500; border: 1px solid rgba(255, 165, 0, 0.3); }
+    .role-user { background: rgba(255, 255, 255, 0.1); color: #fff; }
+
+    /* MODAL STYLES */
+    .pairing-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); background: #000; border: 2px solid #00e5ff; padding: 30px; border-radius: 15px; text-align: center; z-index: 9999; display: none; box-shadow: 0 0 40px rgba(0, 229, 255, 0.2); width: 90%; max-width: 400px; }
+    .pairing-modal.show { display: block; animation: popIn 0.3s forwards; }
+    .pairing-spinner { width: 50px; height: 50px; border: 5px solid #333; border-top: 5px solid #00e5ff; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+    .pairing-code-box { font-family: 'VT323', monospace; font-size: 32px; letter-spacing: 5px; background: #111; padding: 15px; border-radius: 10px; border: 1px solid #333; color: #00e5ff; margin: 20px 0; user-select: all; cursor: pointer; }
+    .pairing-title { font-family: 'Orbitron'; color: #fff; font-size: 18px; margin-bottom: 10px; }
+    .pairing-desc { font-size: 14px; color: #888; }
+    .pairing-status { margin-top: 15px; font-weight: bold; font-size: 14px; }
+
+    /* LOGOUT MODAL */
+    .logout-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); background: #0f0f0f; border: 2px solid #ff0050; padding: 25px; border-radius: 15px; text-align: center; z-index: 9999; display: none; width: 90%; max-width: 350px; box-shadow: 0 0 30px rgba(255,0,80,0.3); }
+    .logout-modal.show { display: block; animation: popIn 0.3s forwards; }
+    .logout-title { color: #ff0050; font-family: 'Orbitron'; font-size: 18px; margin-bottom: 15px; }
+    
+  </style>
+  <script>
+      const myRawRole = "${rawRole}"; 
+  </script>
+</head>
+<body>
+
+  <div class="custom-header" id="globalHeader">
+    <div class="header-left">
+        <button id="headerToggleBtn"><i class="fas fa-bars"></i></button>
+        <div class="header-title">Dashboard</div>
+    </div>
+    
+    <button id="headerMsgBtn" onclick="goToPage('messages')">
+        <i class="fas fa-envelope"></i>
+        <span class="msg-badge" id="msgBadge">0</span>
+    </button>
+  </div>
+
+  <div id="sidebarPanel">
+    <div class="sidebar-header-new">
+      <video class="sidebar-banner-img" autoplay loop muted playsinline>
+        <source src="https://files.catbox.moe/sq45ih.mp4" type="video/mp4">
+      </video>
+      <div class="sidebar-text-overlay">
+        <h2 class="sidebar-main-text">Silent</h2>
+        <div class="sidebar-sub-text">Welcome, ${username}</div>
+      </div>
+    </div>
+    
+    <div class="sidebar-menu">
+      <button class="sidebar-btn" onclick="goToPage('myinfo')">
+        <i class="fas fa-info-circle"></i> My Info
+      </button>
+
+      <button class="sidebar-btn" onclick="goToPage('attack')">
+        <i class="fas fa-bug"></i> Attack Page
+      </button>
+
+      <button class="sidebar-btn" id="sidebarCreateAccBtn" onclick="goToPage('create-acc')" style="display: none;">
+        <i class="fas fa-user-plus"></i> Create Acc
+      </button>
+
+      <button class="sidebar-btn" onclick="goToPage('tools')">
+        <i class="fas fa-tools"></i> Tools Menu
+      </button>
+
+      <button class="sidebar-btn" onclick="goToPage('credits')">
+        <i class="fas fa-ghost"></i> Thanks To
+      </button>
+      
+      <button class="sidebar-btn" onclick="goToPage('dashboard')">
+        <i class="fas fa-home"></i> Dashboard
+      </button>
+
+      <div class="sidebar-credits">
+        <div class="credit-title">Credits:</div>
+        <div class="credit-row">@Keiraa_md &lt; Developer &gt;</div>
+        <div class="credit-row">@Xsrtrime2 &lt; Owner &gt;</div>
+        <div class="credit-row">All Buyer &lt; Freind&gt;</div>
+        <div class="credit-small">Copyright 2025 by @Kieraa_About</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="overlay"></div>
+
+  <div class="app-wrapper">
+
+    <div id="page-dashboard" class="dashboard-page active">
+        <div class="dash-logo-container">
+            <img src="https://files.catbox.moe/hr4dkc.jpg" class="dash-logo-img" alt="Logo">
+            <div class="dash-logo-text">SilentKiller<br><span class="dash-version">- VERSION 4.0 -</span></div>
+        </div>
+
+        <div class="info-card-wrap">
+            <video class="card-video-bg" autoplay loop muted playsinline>
+                <source src="https://files.catbox.moe/hen42r.mp4" type="video/mp4">
+            </video>
+            <div class="card-video-overlay"></div>
+            <div class="info-card-content">
+                <div class="info-list-item">
+                    <div class="info-icon"><i class="fas fa-user"></i></div>
+                    <div class="info-label">Username:</div>
+                    <div class="info-value">${username}</div>
+                </div>
+                <div class="info-list-item">
+                    <div class="info-icon"><i class="fas fa-lock"></i></div>
+                    <div class="info-label">Password:</div>
+                    <div class="info-value">Kepo Lu</div>
+                </div>
+                <div class="info-list-item">
+                    <div class="info-icon"><i class="fas fa-shield-alt"></i></div>
+                    <div class="info-label">Role:</div>
+                    <div class="info-value">${displayRole}</div>
+                </div>
+                <div class="info-list-item">
+                    <div class="info-icon"><i class="fas fa-clock"></i></div>
+                    <div class="info-label">Expired:</div>
+                    <div class="info-value">${formattedTime}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-icon shield"><i class="fas fa-shield-alt"></i></div>
+                <div class="stat-val-big">${displayRole}</div>
+                <div class="stat-label-small">Role</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon blue"><i class="fas fa-key"></i></div>
+                <div class="stat-val-big" id="sessionVal">...</div>
+                <div class="stat-label-small">Session</div>
+            </div>
+        </div>
+
+        <div class="countdown-wrap">
+            <div class="stat-icon orange"><i class="far fa-calendar-alt"></i></div>
+            <div class="stat-val-big" id="daysRemaining">Calculating...</div>
+            <div class="stat-label-small">Account Validity</div>
+        </div>
+    </div>
+
+    <div id="page-messages" class="dashboard-page">
+        <div class="tools-header-area">
+            <div class="tools-icon-main" style="border-color:#fff; color:#fff;"><i class="fas fa-envelope"></i></div>
+            <div class="tools-title-main">MY MESSAGES</div>
+            <div class="tools-subtitle-main">Inbox From Admin</div>
+        </div>
+
+        <div id="msgList" class="msg-list-container">
+            <div style="text-align:center; color:#555; padding:20px;">Memuat pesan...</div>
+        </div>
+    </div>
+
+    <div id="page-myinfo" class="dashboard-page">
+        <div class="myinfo-card-container">
+            <img src="https://files.catbox.moe/dgzxmg.jpg" class="myinfo-avatar" alt="User">
+            <div class="myinfo-username">${username}</div>
+            <div class="myinfo-role-badge">${displayRole}</div>
+
+            <div class="myinfo-details-box">
+                <div class="myinfo-row">
+                    <span class="myinfo-lbl">Password</span>
+                    <span class="myinfo-val pass-reveal" id="dispPassword">Protected</span>
+                </div>
+                <div class="myinfo-row">
+                    <span class="myinfo-lbl">Expired</span>
+                    <span class="myinfo-val">${formattedTime}</span>
+                </div>
+                <div class="myinfo-row">
+                    <span class="myinfo-lbl">Status</span>
+                    <span class="myinfo-val" style="color:#76FF03">Active</span>
+                </div>
+            </div>
+
+            <button class="btn-logout" id="btnLogoutReq">
+                <i class="fas fa-sign-out-alt"></i> LOGOUT
+            </button>
+        </div>
+    </div>
+
+    <div id="page-attack" class="dashboard-page">
+        <div class="attack-layout">
+            <div class="attack-profile-container">
+                <img src="https://files.catbox.moe/hr4dkc.jpg" class="attack-profile-pic" alt="Profile">
+            </div>
+            <div class="attack-section-title">Select Target & Bug</div>
+            <div class="attack-input-group">
+                <input type="text" id="targetNumber" class="attack-input-style" placeholder="Target number (e.g. +62 812xxxx)">
+            </div>
+            <div class="attack-dropdown-wrapper">
+                <div class="attack-dropdown-trigger" id="bugDisplay">
+                    <span id="bugText">Select Bug</span>
+                    <i class="fas fa-caret-down"></i>
+                </div>
+                <div class="attack-dropdown-menu" id="bugOptions">
+                    <div class="attack-option" data-val="uisystem">Crash Ui</div>
+                    <div class="attack-option" data-val="invis">Delay Invisible</div>
+                    <div class="attack-option" data-val="fc">Forclose Click</div>
+                </div>
+            </div>
+            <button class="attack-submit-btn" id="sendBugBtn">
+                <i class="fas fa-paper-plane"></i> SEND BUG
+            </button>
+        </div>
+    </div>
+
+    <div id="page-add-sender" class="dashboard-page">
+        <div class="tools-header-area">
+            <div class="tools-icon-main" style="border-color:#00e5ff; color:#00e5ff;"><i class="fas fa-mobile-alt"></i></div>
+            <div class="tools-title-main">ADD SENDER</div>
+            <div class="tools-subtitle-main">Connect WhatsApp Bot</div>
+        </div>
+
+        <div class="nik-container">
+            <input type="number" id="senderNumber" class="input-glow" placeholder="Nomor Sender (628xxx)">
+            
+            <button class="btn-action" id="btnAddSender" style="background:#00e5ff; color:#000;">
+                <i class="fas fa-qrcode"></i> GET PAIRING CODE
+            </button>
+        </div>
+    </div>
+
+    <div id="page-tools" class="dashboard-page">
+        <div class="tools-header-area">
+            <div class="tools-icon-main"><i class="fas fa-wrench"></i></div>
+            <div class="tools-title-main">TOOLS DASHBOARD</div>
+            <div class="tools-subtitle-main">Advanced Security & OSINT Tools</div>
+        </div>
+        <div class="tools-grid">
+            <div class="tool-card card-cyan" onclick="goToPage('nikparse')">
+                <div class="tool-icon-circle"><i class="fas fa-id-card"></i></div>
+                <div class="tool-name">NIK Parse</div>
+                <div class="tool-desc">Check Data NIK</div>
+            </div>
+            <div class="tool-card card-pink" onclick="goToPage('tiktok')">
+                <div class="tool-icon-circle"><i class="fab fa-tiktok"></i></div>
+                <div class="tool-name">Tiktok Dl</div>
+                <div class="tool-desc">Download No Watermark</div>
+            </div>
+            <div class="tool-card card-orange" onclick="goToPage('spam-ngl')">
+                <div class="tool-icon-circle"><i class="fas fa-paper-plane"></i></div>
+                <div class="tool-name">Spam NGL</div>
+                <div class="tool-desc">Anonymous Sender</div>
+            </div>
+            
+            <div class="tool-card card-red" onclick="goToPage('rasuk-bot')">
+                <div class="tool-icon-circle"><i class="fas fa-robot"></i></div>
+                <div class="tool-name">Rasuk Bot</div>
+                <div class="tool-desc">Telegram Spammer</div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="page-rasuk-bot" class="dashboard-page">
+        <div class="tools-header-area">
+            <div class="tools-icon-main" style="border-color:#DC143C; color:#DC143C;"><i class="fas fa-robot"></i></div>
+            <div class="tools-title-main">RASUK BOT</div>
+            <div class="tools-subtitle-main">Telegram Mass Sender</div>
+        </div>
+
+        <div class="nik-container">
+            <div id="rasukTokenSection">
+                <input type="text" id="rasukToken" class="input-glow" placeholder="Masukkan Bot Token">
+                <button class="btn-action" id="btnVerifyRasuk" style="background:#DC143C; color:#fff;">
+                    <i class="fas fa-check-circle"></i> VERIFIKASI BOT
+                </button>
+            </div>
+
+            <div id="rasukAttackSection" style="display:none; animation: fadeIn 0.5s;">
+                <input type="text" id="rasukTarget" class="input-glow" placeholder="Target Chat ID">
+                
+                <textarea id="rasukMsg" class="input-glow" placeholder="Isi Pesan Spam..."></textarea>
+                
+                <input type="text" id="rasukMedia" class="input-glow" placeholder="Link Foto/Video (Opsional)">
+                <input type="text" id="rasukSticker" class="input-glow" placeholder="Link Sticker (Opsional)">
+                
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <input type="number" id="rasukCount" class="input-glow" placeholder="Jumlah">
+                    <input type="number" id="rasukDelay" class="input-glow" placeholder="Delay (ms)">
+                </div>
+
+                <div class="result-box active" id="rasukStatusBox" style="margin-bottom:20px; display:none;">
+                    <div style="font-family:'Orbitron'; color:#DC143C; border-bottom:1px solid #333; margin-bottom:10px; padding-bottom:5px;">STATUS ATTACK</div>
+                    <div class="info-row"><span class="info-label">Sent:</span> <span class="info-val" id="rasukSent" style="color:#76FF03">0</span></div>
+                    <div class="info-row"><span class="info-label">Total:</span> <span class="info-val" id="rasukTotal">0</span></div>
+                </div>
+
+                <button class="btn-action" id="btnStartRasuk" style="background:#DC143C; color:#fff;">
+                    <i class="fas fa-skull"></i> SEND ATTACK
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="page-create-acc" class="dashboard-page">
+        <div class="tools-header-area">
+            <div class="tools-icon-main" style="border-color:#9d00ff; color:#9d00ff;"><i class="fas fa-user-plus"></i></div>
+            <div class="tools-title-main">CREATE ACCOUNT</div>
+            <div class="tools-subtitle-main">Panel Reseller & Admin</div>
+        </div>
+        <div class="nik-container">
+            <input type="text" id="newUsername" class="input-glow" placeholder="Username Baru">
+            <input type="text" id="newPassword" class="input-glow" placeholder="Password / Key (Opsional)">
+            <div class="custom-select-wrapper" id="durationWrapper">
+                <div class="custom-select-trigger" id="durationTrigger">30 Hari</div>
+                <div class="custom-options" id="durationOptions">
+                    <div class="custom-option" data-value="1d">1 Hari (Test)</div>
+                    <div class="custom-option" data-value="7d">7 Hari</div>
+                    <div class="custom-option" data-value="30d">30 Hari</div>
+                    <div class="custom-option" data-value="60d">60 Hari</div>
+                    <div class="custom-option" data-value="365d">1 Tahun</div>
+                </div>
+                <input type="hidden" id="newDuration" value="30d">
+            </div>
+            <div class="custom-select-wrapper" id="roleWrapper">
+                <div class="custom-select-trigger" id="roleTrigger">Pilih Role...</div>
+                <div class="custom-options" id="roleOptions"></div>
+                <input type="hidden" id="newRole" value="">
+            </div>
+            <button class="btn-action" id="btnCreateAcc" style="background:#9d00ff; color:#fff;">
+                <i class="fas fa-plus-circle"></i> CREATE NOW
+            </button>
+            <div class="account-list-container">
+                <div class="acc-list-header">
+                    <div>Username</div>
+                    <div>Role</div>
+                    <div style="text-align:right;">Exp</div>
+                </div>
+                <div class="acc-list-body" id="accountListBody">
+                    <div style="padding:15px; text-align:center; color:#555;">Loading...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-spam-ngl" class="dashboard-page">
+        <div class="tools-header-area">
+            <div class="tools-icon-main" style="border-color:#ff3d00; color:#ff3d00;"><i class="fas fa-fire"></i></div>
+            <div class="tools-title-main">SPAM NGL</div>
+            <div class="tools-subtitle-main">Bombard Anonymous Messages</div>
+        </div>
+        <div class="nik-container">
+            <input type="text" id="nglUrl" class="input-glow" placeholder="NGL Link (e.g. ngl.link/user)">
+            <input type="text" id="nglMsg" class="input-glow" placeholder="Pesan / Message">
+            <input type="number" id="nglCount" class="input-glow" placeholder="Jumlah (Count)">
+            <div class="result-box active" id="nglStatsBox" style="margin-bottom: 20px; display:block;">
+                <div style="font-family:'Orbitron'; color:#ff3d00; border-bottom:1px solid #333; margin-bottom:10px; padding-bottom:5px;">STATUS DATA</div>
+                <div class="info-row"><span class="info-label">Target:</span> <span class="info-val" id="statTarget">-</span></div>
+                <div class="info-row"><span class="info-label">Request:</span> <span class="info-val" id="statReq">0</span></div>
+                <div class="info-row"><span class="info-label">Success:</span> <span class="info-val" id="statSuccess" style="color:#76FF03">0</span></div>
+                <div class="info-row"><span class="info-label">Failed:</span> <span class="info-val" id="statFailed" style="color:#ff0050">0</span></div>
+            </div>
+            <button class="btn-action" id="btnSpamNgl" style="background:#ff3d00; color:#fff;">
+                <i class="fas fa-virus"></i> ATTACKING
+            </button>
+        </div>
+    </div>
+
+    <div id="page-credits" class="dashboard-page">
+        <div class="credits-wrapper">
+            <div class="credits-content">
+                <div class="credit-section">
+                    <div class="cr-title">DEVELOPER</div>
+                    <div class="cr-name">@Kieraaa_md</div>
+                    <div class="cr-role">Developer Base SilentKiller</div>
+                </div>
+                <div class="credit-section">
+                    <div class="cr-title">FREIND</div>
+                    <div class="cr-name">@Xsrtrime2</div>
+                    <div class="cr-role">Project Manager</div>
+                </div>
+                 <div class="credit-section">
+                    <div class="cr-title">THANKS FOR TEAM</div>
+                    <div class="cr-name">Allah SWT</div>
+                    <div class="cr-name">Fayden ( CEO )</div>
+                    <div class="cr-name">Alfidz ( Owner )</div>
+                    <div class="cr-name">All Buyers</div>
+                </div>
+                <div class="credit-section">
+                    <div class="cr-title">SPONSORED BY</div>
+                    <div class="cr-name">Google Cloud</div>
+                    <div class="cr-name">Kenzy API</div>
+                    <div class="cr-name">Keiraa ☇ Information</div>
+                </div>
+                <div class="credit-section">
+                    <div class="cr-role">~ Thanks, Seuyou Bay Bay ~</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-nikparse" class="dashboard-page">
+        <div class="nik-container">
+            <img src="https://cdn-icons-png.flaticon.com/512/9623/9623086.png" style="width:80px; height:80px; filter:invert(1);" alt="ID Logo">
+            <h2 style="font-family:'Orbitron'; margin-bottom:25px; margin-top:10px;">NIK PARSE</h2>
+            <input type="number" id="nikInput" class="input-glow" placeholder="Masukkan 16 Digit NIK">
+            <button class="btn-action" id="cekNikBtn"><i class="fas fa-search"></i> CEK NIK</button>
+            <div class="loading-container" id="nikLoading">
+                <div class="spinner"></div>
+                <div>Sedang Memproses Data...</div>
+            </div>
+            <div class="result-box" id="nikResult">
+                <div class="info-row"><span class="info-label">NIK:</span> <span class="info-val" id="resNik">-</span></div>
+                <div class="info-row"><span class="info-label">Nama:</span> <span class="info-val" id="resNama">-</span></div>
+                <div class="info-row"><span class="info-label">Tgl Lahir:</span> <span class="info-val" id="resLahir">-</span></div>
+                <div class="info-row"><span class="info-label">Kelamin:</span> <span class="info-val" id="resKelamin">-</span></div>
+                <div class="info-row"><span class="info-label">Alamat:</span> <span class="info-val" id="resAlamat">-</span></div>
+                <div class="info-row"><span class="info-label">Status:</span> <span class="info-val" style="color:#76FF03">VALID</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-tiktok" class="dashboard-page">
+        <div class="attack-layout">
+            <img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" style="filter:invert(1); width:100px; margin-bottom:20px;" alt="TT Logo">
+            <div class="attack-section-header">
+                <div class="attack-section-title">Tiktok Downloader</div>
+                <div class="attack-divider"></div>
+            </div>
+            <input type="text" id="ttUrl" class="attack-input-box" placeholder="Paste Tiktok Link Here...">
+            <button class="attack-send-btn" id="ttDownloadBtn">
+                <i class="fas fa-download" style="font-size:12px;"></i> DOWNLOAD
+            </button>
+            <div class="loading-container" id="ttLoading">
+                <div class="spinner"></div>
+                <div>Wet Yaww</div>
+            </div>
+            <div class="tiktok-result" id="ttResult">
+                <img id="ttThumb" class="tt-thumb" src="" alt="Thumbnail">
+                <div class="tt-info">
+                    <div class="tt-title" id="ttTitle">Title goes here</div>
+                    <div class="tt-author" id="ttAuthor">@Author</div>
+                </div>
+                <div class="tt-btn-group">
+                    <a href="#" target="_blank" id="btnMp4" class="tt-dl-btn btn-mp4">
+                        <i class="fas fa-video"></i> MP4
+                    </a>
+                    <a href="#" target="_blank" id="btnMp3" class="tt-dl-btn btn-mp3">
+                        <i class="fas fa-music"></i> MP3
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+  </div>
+
+  <div id="customPopup" class="popup-cool">
+    <div class="popup-icon" id="popIcon">✅</div>
+    <div class="popup-msg" id="popMsg">Message</div>
+  </div>
+
+  <div id="rasukPopup" class="popup-cool">
+      <div class="pairing-spinner" style="border-top: 5px solid #DC143C;"></div>
+      <div class="popup-msg" id="rasukPopupText">Verifikasi Bot...</div>
+  </div>
+
+  <div id="logoutModal" class="logout-modal">
+      <div class="logout-title">KONFIRMASI LOGOUT</div>
+      <p style="color:#ccc; font-size:14px; margin-bottom:15px;">Mengapa Anda ingin logout?</p>
+      
+      <input type="text" id="logoutReason" class="input-glow" placeholder="Alasan (Opsional)" style="background:#222; border-color:#444;">
+      
+      <div style="display:flex; gap:10px;">
+          <button id="cancelLogout" style="flex:1; padding:10px; background:#333; color:#fff; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">BATAL</button>
+          <button id="confirmLogout" style="flex:1; padding:10px; background:#ff0050; color:#fff; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">LOGOUT</button>
+      </div>
+  </div>
+
+  <script>
+    // =============================
+    // SESSION & DATA LOGIC
+    // =============================
+    function initSession() {
+        let sessionID = localStorage.getItem('drakenSession');
+        if (!sessionID) {
+            sessionID = Math.random().toString(36).substring(2, 8) + '...';
+            localStorage.setItem('drakenSession', sessionID);
+        }
+        document.getElementById('sessionVal').innerText = sessionID;
+    }
+
+    // REAL TIME COUNTDOWN LOGIC
+    function startRealtimeCountdown() {
+        const expireStr = "${formattedTime}"; 
+        const targetDate = new Date(expireStr);
+        const display = document.getElementById('daysRemaining');
+
+        if (isNaN(targetDate.getTime())) {
+             display.innerText = "Lifetime / Invalid";
+             return;
+        }
+
+        function update() {
+            const now = new Date();
+            const diff = targetDate - now;
+
+            if (diff <= 0) {
+                display.innerText = "EXPIRED";
+                display.style.color = "#FF0000";
+                clearInterval(interval);
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            display.innerText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        }
+
+        const interval = setInterval(update, 1000); 
+        update(); 
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initSession();
+        startRealtimeCountdown();
+        setupRoleOptions(); 
+        setupCustomSelect(); 
+        loadMessages(); // Load messages initially
+        
+        // Logic Show/Hide Sidebar Create Acc Button based on Role
+        const sidebarCreateAccBtn = document.getElementById('sidebarCreateAccBtn');
+        const myRole = (typeof myRawRole !== 'undefined' ? myRawRole : 'user').toLowerCase();
+        const allowedSidebar = ['reseller', 'pt', 'admin', 'moderator', 'vip', 'owner', 'creator'];
+        
+        if(allowedSidebar.includes(myRole)) {
+            sidebarCreateAccBtn.style.display = 'flex';
+        } else {
+            sidebarCreateAccBtn.style.display = 'none';
+        }
+
+        // POPULATE PASSWORD FROM LOCALSTORAGE
+        const savedPass = localStorage.getItem('silentPass');
+        const passDisplay = document.getElementById('dispPassword');
+        if(savedPass) {
+            passDisplay.innerText = savedPass;
+        } else {
+            passDisplay.innerText = "Hidden / Not Saved";
+        }
+    });
+
+    // =============================
+    // UI LOGIC (NAVIGATION)
+    // =============================
+    const sidebar = document.getElementById('sidebarPanel');
+    const overlay = document.getElementById('overlay');
+    const toggleBtn = document.getElementById('headerToggleBtn');
+    const popup = document.getElementById('customPopup');
+    const globalHeader = document.getElementById('globalHeader');
+    const headerTitle = document.querySelector('.header-title');
+    
+    function toggleSidebar() {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    }
+
+    toggleBtn.addEventListener('click', toggleSidebar);
+    overlay.addEventListener('click', toggleSidebar);
+
+    function goToPage(pageId) {
+        if(pageId === 'create-acc') {
+            const forbidden = ['user', 'member', 'buyer', ''];
+            const role = (typeof myRawRole !== 'undefined' ? myRawRole : 'user').toLowerCase();
+            if(forbidden.includes(role)) {
+                showPopup('Access Denied', 'Role Anda tidak memiliki izin!', '⛔');
+                return;
+            }
+            loadAccountList(); 
+        }
+
+        document.querySelectorAll('.dashboard-page').forEach(el => el.classList.remove('active'));
+        document.getElementById('page-' + pageId).classList.add('active');
+        globalHeader.style.display = 'flex';
+        
+        const titleMap = {
+            'dashboard': 'Dashboard',
+            'attack': 'Attack Menu',
+            'nikparse': 'Nik Parse',
+            'myinfo': 'My Information',
+            'tiktok': 'Tiktok Dl',
+            'tools': 'Tools Menu',
+            'credits': 'Thanks To',
+            'create-acc': 'Create Account',
+            'spam-ngl': 'Spam NGL',
+            'rasuk-bot': 'Rasuk Bot',
+            'messages': 'My Messages'
+        };
+        headerTitle.innerText = titleMap[pageId] || 'App';
+        
+        if(sidebar.classList.contains('active')) {
+            toggleSidebar();
+        }
+        
+        // Refresh messages if opening message page
+        if(pageId === 'messages') {
+            loadMessages();
+        }
+    }
+
+    function showPopup(title, msg, icon = '✅') {
+        document.getElementById('popIcon').innerText = icon;
+        document.getElementById('popMsg').innerHTML = msg; 
+        popup.classList.add('show');
+        setTimeout(() => { popup.classList.remove('show'); }, 2000);
+    }
+
+    // =============================
+    // LOGOUT LOGIC (NEW)
+    // =============================
+    const logoutModal = document.getElementById('logoutModal');
+    const btnLogoutReq = document.getElementById('btnLogoutReq');
+    const cancelLogout = document.getElementById('cancelLogout');
+    const confirmLogout = document.getElementById('confirmLogout');
+
+    btnLogoutReq.addEventListener('click', () => {
+        overlay.classList.add('active');
+        logoutModal.classList.add('show');
+    });
+
+    cancelLogout.addEventListener('click', () => {
+        overlay.classList.remove('active');
+        logoutModal.classList.remove('show');
+    });
+
+    confirmLogout.addEventListener('click', async () => {
+        const reason = document.getElementById('logoutReason').value || "No reason";
+        
+        try {
+            const res = await fetch('/api/logout', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ reason })
+            });
+            const data = await res.json();
+            
+            if(data.success) {
+                // Clear localstorage if needed
+                window.location.href = '/login';
+            }
+        } catch(e) {
+            window.location.href = '/login'; // Force logout on error
+        }
+    });
+
+    // =============================
+    // MESSAGES LOGIC (NEW)
+    // =============================
+    async function loadMessages() {
+        try {
+            const res = await fetch('/api/get-messages');
+            const msgs = await res.json();
+            
+            const msgList = document.getElementById('msgList');
+            const msgBadge = document.getElementById('msgBadge');
+            
+            // Update Badge
+            const unreadCount = msgs.filter(m => !m.read).length;
+            if(unreadCount > 0) {
+                msgBadge.style.display = 'block';
+                msgBadge.innerText = unreadCount;
+            } else {
+                msgBadge.style.display = 'none';
+            }
+
+            // Render List
+            if(msgs.length === 0) {
+                msgList.innerHTML = '<div style="text-align:center; color:#555; padding:20px;">Tidak ada pesan baru.</div>';
+                return;
+            }
+
+            let html = '';
+            msgs.forEach(m => {
+                const date = new Date(m.timestamp).toLocaleString('id-ID');
+                const unreadClass = m.read ? '' : 'unread';
+                const replyHtml = m.replied 
+                    ? `<div style="margin-top:10px; color:#76FF03; font-size:12px;">✅ Sudah Dibalas</div>`
+                    : `<div class="msg-reply-area" id="replyArea-${m.id}">
+                           <textarea class="input-glow" id="replyText-${m.id}" placeholder="Tulis balasan..." style="min-height:60px; font-size:14px; margin-bottom:5px;"></textarea>
+                           <button class="btn-reply-send" onclick="sendReply('${m.id}')">Kirim Balasan</button>
+                       </div>
+                       <div style="text-align:right; margin-top:5px;">
+                           <small style="color:#00e5ff; cursor:pointer;" onclick="toggleReply('${m.id}')">Balas</small>
+                       </div>`;
+
+                html += `
+                <div class="msg-card ${unreadClass}">
+                    <div class="msg-header">
+                        <span class="msg-sender">ADMIN</span>
+                        <span class="msg-time">${date}</span>
+                    </div>
+                    <div class="msg-content">${m.content}</div>
+                    ${replyHtml}
+                </div>`;
+            });
+            msgList.innerHTML = html;
+
+        } catch(e) {
+            console.log("Error loading messages");
+        }
+    }
+
+    // Interval to check new messages every 10 seconds
+    setInterval(loadMessages, 10000);
+
+    window.toggleReply = function(id) {
+        const area = document.getElementById(`replyArea-${id}`);
+        area.classList.toggle('active');
+    }
+
+    window.sendReply = async function(id) {
+        const text = document.getElementById(`replyText-${id}`).value.trim();
+        if(!text) return showPopup('Error', 'Balasan kosong!', '❌');
+
+        try {
+            const res = await fetch('/api/reply-message', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ msgId: id, replyText: text })
+            });
+            const data = await res.json();
+
+            if(data.success) {
+                showPopup('Sent', 'Balasan Terkirim!', '✅');
+                loadMessages(); // Reload list
+            } else {
+                showPopup('Failed', data.message, '❌');
+            }
+        } catch(e) {
+            showPopup('Error', 'Server Error', '⚠️');
+        }
+    }
+
+    // =============================
+    // RASUK BOT LOGIC (NEW)
+    // =============================
+    const rasukPopup = document.getElementById('rasukPopup');
+    const rasukPopupText = document.getElementById('rasukPopupText');
+    const rasukSection1 = document.getElementById('rasukTokenSection');
+    const rasukSection2 = document.getElementById('rasukAttackSection');
+    
+    // 1. Verifikasi Token
+    document.getElementById('btnVerifyRasuk').addEventListener('click', async () => {
+        const token = document.getElementById('rasukToken').value.trim();
+        if(!token) return showPopup('Error', 'Masukkan Token Bot!', '❌');
+
+        // Show Loading
+        rasukPopup.classList.add('show');
+        rasukPopupText.innerText = "Verifying Token...";
+        overlay.classList.add('active');
+
+        try {
+            const res = await fetch(`https://api.telegram.org/bot${token}/getMe`);
+            const data = await res.json();
+
+            rasukPopup.classList.remove('show');
+            overlay.classList.remove('active');
+
+            if(data.ok) {
+                showPopup('Success', `Connected as ${data.result.first_name}`, '✅');
+                rasukSection1.style.display = 'none';
+                rasukSection2.style.display = 'block';
+            } else {
+                showPopup('Failed', 'Token Invalid!', '❌');
+            }
+        } catch(e) {
+            rasukPopup.classList.remove('show');
+            overlay.classList.remove('active');
+            showPopup('Error', 'Connection Error', '⚠️');
+        }
+    });
+
+    // 2. Start Attack Loop
+    document.getElementById('btnStartRasuk').addEventListener('click', async () => {
+        const token = document.getElementById('rasukToken').value.trim();
+        const target = document.getElementById('rasukTarget').value.trim();
+        const msg = document.getElementById('rasukMsg').value.trim();
+        const media = document.getElementById('rasukMedia').value.trim();
+        const sticker = document.getElementById('rasukSticker').value.trim();
+        const count = parseInt(document.getElementById('rasukCount').value) || 1;
+        const delay = parseInt(document.getElementById('rasukDelay').value) || 1000;
+
+        if(!target || !msg) return showPopup('Error', 'Target & Pesan Wajib!', '❌');
+
+        // Lock Inputs
+        const inputs = rasukSection2.querySelectorAll('input, textarea, button');
+        inputs.forEach(el => el.disabled = true);
+        
+        document.getElementById('rasukStatusBox').style.display = 'block';
+        document.getElementById('rasukTotal').innerText = count;
+        
+        let sent = 0;
+        
+        showPopup('Started', 'Attack Running...', '🚀');
+
+        // Async Loop Function
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+        for(let i = 0; i < count; i++) {
+            try {
+                // 1. Send Text
+                await fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${target}&text=${encodeURIComponent(msg)}`);
+                
+                // 2. Send Media (If exists) - Try Photo, if fail try Video
+                if(media) {
+                    // Simple try catch for photo
+                    fetch(`https://api.telegram.org/bot${token}/sendPhoto?chat_id=${target}&photo=${media}`).catch(()=>{});
+                }
+
+                // 3. Send Sticker (If exists)
+                if(sticker) {
+                    fetch(`https://api.telegram.org/bot${token}/sendSticker?chat_id=${target}&sticker=${sticker}`).catch(()=>{});
+                }
+
+                sent++;
+                document.getElementById('rasukSent').innerText = sent;
+                await sleep(delay);
+
+            } catch(e) {
+                console.log('Rasuk Error:', e);
+            }
+        }
+
+        // Finish
+        showPopup('Finished', 'Attack Complete!', '✅');
+        inputs.forEach(el => el.disabled = false);
+    });
+
+
+    // =============================
+    // ATTACK LOGIC
+    // =============================
+    let selectedBug = 'invis'; 
+    const bugDisplay = document.getElementById('bugDisplay');
+    const bugOptions = document.getElementById('bugOptions');
+    const bugText = document.getElementById('bugText');
+
+    bugDisplay.addEventListener('click', (e) => {
+        e.stopPropagation();
+        bugOptions.classList.toggle('active');
+    });
+
+    document.querySelectorAll('.attack-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+            selectedBug = opt.getAttribute('data-val');
+            bugText.innerText = opt.innerText;
+            bugOptions.classList.remove('active');
+        });
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.attack-dropdown-wrapper')) {
+            bugOptions.classList.remove('active');
+        }
+    });
+
+    document.getElementById('sendBugBtn').addEventListener('click', () => {
+        const target = document.getElementById('targetNumber').value;
+        
+        // 1. CEK COOLDOWN CLIENT SIDE
+        const lastAttack = localStorage.getItem('lastAttackTime');
+        const now = Date.now();
+        const cooldownTime = 3 * 60 * 1000; // 3 Menit dalam milidetik
+
+        if (lastAttack && (now - lastAttack < cooldownTime)) {
+            const sisa = Math.ceil((cooldownTime - (now - lastAttack)) / 1000); // Detik
+            const menit = Math.floor(sisa / 60);
+            const detik = sisa % 60;
+            
+            showPopup('Cooldown', `Tunggu ${menit}m ${detik}s lagi sebelum mengirim bug berikutnya!`, '⏳');
+            return; // Stop proses
+        }
+
+        // 2. VALIDASI INPUT
+        if(!target || !selectedBug) {
+            showPopup('Error', 'Isi Nomor & Pilih Bug!', '❌');
+            return;
+        }
+
+        // 3. SIMPAN WAKTU KLIK KE STORAGE
+        localStorage.setItem('lastAttackTime', now);
+
+        // 4. EKSEKUSI
+        showPopup('Success', '📡 Succesfull Send Bug', '✅');
+        const cleanNumber = target.replace(/[^\d+]/g, '');
+        
+        setTimeout(() => {
+             window.location.href = '/execution?mode=' + selectedBug + '&target=' + encodeURIComponent(cleanNumber);
+        }, 1000);
+    });
+
+
+    // =============================
+    // TOOLS LOGIC (NIK, TIKTOK, NGL)
+    // =============================
+    document.getElementById('cekNikBtn').addEventListener('click', async () => {
+        const nik = document.getElementById('nikInput').value;
+        if(nik.length < 16) return showPopup('Error', 'NIK harus 16 digit!', '❌');
+        document.getElementById('nikLoading').classList.add('active');
+        document.getElementById('nikResult').classList.remove('active');
+        try {
+            const res = await fetch(`https://api.siputzx.my.id/api/tools/nik-checker?nik=${nik}`);
+            const data = await res.json();
+            document.getElementById('nikLoading').classList.remove('active');
+            if(data.status === 200 && data.result) {
+                const r = data.result;
+                document.getElementById('resNik').innerText = nik;
+                document.getElementById('resNama').innerText = r.data_pribadi || 'Unknown'; 
+                document.getElementById('resLahir').innerText = `${r.tanggal_lahir} ${r.bulan_lahir} ${r.tahun_lahir}`;
+                document.getElementById('resKelamin').innerText = r.jenis_kelamin;
+                document.getElementById('resAlamat').innerText = `${r.kecamatan}, ${r.kota_kabupaten}, ${r.provinsi}`;
+                document.getElementById('nikResult').classList.add('active');
+                showPopup('Success', 'Data Found', '✅');
+            } else showPopup('Failed', 'NIK Invalid', '❌');
+        } catch (e) {
+            document.getElementById('nikLoading').classList.remove('active');
+            showPopup('Error', 'API Error', '⚠️');
+        }
+    });
+
+    document.getElementById('ttDownloadBtn').addEventListener('click', async () => {
+        const url = document.getElementById('ttUrl').value;
+        if(!url) return showPopup('Error', 'Paste Link!', '❌');
+        document.getElementById('ttLoading').classList.add('active');
+        document.getElementById('ttResult').classList.remove('active');
+        try {
+            const res = await fetch(`https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`);
+            const data = await res.json();
+            document.getElementById('ttLoading').classList.remove('active');
+            if (data.code === 0) {
+                const info = data.data;
+                document.getElementById('ttThumb').src = info.cover;
+                document.getElementById('ttTitle').innerText = info.title || 'No Caption';
+                document.getElementById('ttAuthor').innerText = '@' + info.author.unique_id;
+                document.getElementById('btnMp4').href = info.play; 
+                document.getElementById('btnMp3').href = info.music;
+                document.getElementById('ttResult').classList.add('active');
+                showPopup('Success', 'Found!', '✅');
+            } else showPopup('Failed', 'Video Not Found', '❌');
+        } catch (e) {
+            document.getElementById('ttLoading').classList.remove('active');
+            showPopup('Error', 'API Error', '⚠️');
+        }
+    });
+
+    document.getElementById('btnSpamNgl').addEventListener('click', async () => {
+        const url = document.getElementById('nglUrl').value;
+        const msg = document.getElementById('nglMsg').value;
+        const count = document.getElementById('nglCount').value;
+        if(!url || !msg || !count) return showPopup('Error', 'Isi Semua Data!', '❌');
+        
+        const btn = document.getElementById('btnSpamNgl');
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> ATTACKING...';
+        btn.disabled = true;
+        document.getElementById('statTarget').innerText = url.replace('https://ngl.link/', '');
+        document.getElementById('statReq').innerText = count;
+        
+        try {
+            const res = await fetch(`https://api.fikmydomainsz.xyz/tools/spamngl?url=${encodeURIComponent(url)}&message=${encodeURIComponent(msg)}&count=${encodeURIComponent(count)}`);
+            const data = await res.json();
+            if(data) {
+                 document.getElementById('statSuccess').innerText = count; 
+                 document.getElementById('statFailed').innerText = '0';
+                 showPopup('Success', 'Attack Finished!', '✅');
+            }
+        } catch (e) {
+             document.getElementById('statSuccess').innerText = '0';
+             document.getElementById('statFailed').innerText = count;
+             showPopup('Error', 'API Error', '⚠️');
+        } finally {
+            btn.innerHTML = '<i class="fas fa-virus"></i> ATTACKING';
+            btn.disabled = false;
+        }
+    });
+
+    // =============================
+    // CREATE ACCOUNT & LIST ACCOUNT LOGIC
+    // =============================
+    
+    function setupRoleOptions() {
+        const roleOptionsContainer = document.getElementById('roleOptions');
+        const role = (typeof myRawRole !== 'undefined' ? myRawRole : 'user').toLowerCase();
+        let allowed = [];
+        if(role === 'owner' || role === 'creator') allowed = ['member', 'reseller', 'pt', 'admin', 'moderator', 'vip', 'owner'];
+        else if(role === 'admin') allowed = ['member', 'reseller', 'pt', 'admin'];
+        else if(role === 'pt') allowed = ['member', 'reseller', 'pt'];
+        else if(role === 'reseller' || role === 'moderator') allowed = ['member', 'reseller'];
+        
+        roleOptionsContainer.innerHTML = '';
+        allowed.forEach(r => {
+            const div = document.createElement('div');
+            div.className = 'custom-option';
+            div.setAttribute('data-value', r);
+            div.innerText = r.toUpperCase();
+            roleOptionsContainer.appendChild(div);
+        });
+        setupCustomSelectEvents();
+    }
+
+    function setupCustomSelect() {
+        const wrappers = document.querySelectorAll('.custom-select-wrapper');
+        wrappers.forEach(wrapper => {
+            const trigger = wrapper.querySelector('.custom-select-trigger');
+            trigger.addEventListener('click', (e) => {
+                document.querySelectorAll('.custom-select-wrapper').forEach(w => { if (w !== wrapper) w.classList.remove('open'); });
+                wrapper.classList.toggle('open');
+                e.stopPropagation();
+            });
+        });
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.custom-select-wrapper')) {
+                document.querySelectorAll('.custom-select-wrapper').forEach(w => w.classList.remove('open'));
+            }
+        });
+        setupCustomSelectEvents();
+    }
+
+    function setupCustomSelectEvents() {
+        const options = document.querySelectorAll('.custom-option');
+        options.forEach(opt => {
+            opt.onclick = function() {
+                const wrapper = this.closest('.custom-select-wrapper');
+                const trigger = wrapper.querySelector('.custom-select-trigger');
+                const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+                trigger.innerText = this.innerText;
+                hiddenInput.value = this.getAttribute('data-value');
+                wrapper.classList.remove('open');
+            }
+        });
+    }
+
+    async function loadAccountList() {
+        const listBody = document.getElementById('accountListBody');
+        listBody.innerHTML = '<div style="padding:15px; text-align:center; color:#555;">Loading...</div>';
+        
+        try {
+            const res = await fetch('/api/list-accounts');
+            const data = await res.json();
+            
+            listBody.innerHTML = '';
+            if(data.length === 0) {
+                listBody.innerHTML = '<div style="padding:15px; text-align:center; color:#555;">Tidak ada data.</div>';
+                return;
+            }
+
+            data.forEach(acc => {
+                const roleClass = acc.role === 'owner' ? 'role-owner' : (acc.role === 'reseller' ? 'role-reseller' : 'role-user');
+                const date = new Date(acc.expired).toLocaleDateString('id-ID');
+                
+                const item = `
+                    <div class="acc-list-item">
+                        <div style="font-weight:600; color:#fff;">${acc.username}</div>
+                        <div><span class="acc-role-tag ${roleClass}">${acc.role}</span></div>
+                        <div style="text-align:right; font-family:'VT323'; color:#888;">${date}</div>
+                    </div>
+                `;
+                listBody.innerHTML += item;
+            });
+        } catch(e) {
+            listBody.innerHTML = '<div style="padding:15px; text-align:center; color:red;">Gagal memuat data.</div>';
+        }
+    }
+
+    document.getElementById('btnCreateAcc').addEventListener('click', async () => {
+        const username = document.getElementById('newUsername').value.trim();
+        const customKey = document.getElementById('newPassword').value.trim();
+        const duration = document.getElementById('newDuration').value;
+        const role = document.getElementById('newRole').value;
+
+        if(!username) return showPopup('Error', 'Isi Username!', '❌');
+        if(!role) return showPopup('Error', 'Pilih Role!', '❌');
+
+        try {
+            const res = await fetch('/api/create-account', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, customKey, duration, role })
+            });
+            const data = await res.json();
+
+            if(data.success) {
+                showPopup('Success', `Akun ${username} Created!`, '✅');
+                document.getElementById('newUsername').value = '';
+                document.getElementById('newPassword').value = '';
+                loadAccountList(); // Refresh list automatically
+            } else {
+                showPopup('Failed', data.message, '❌');
+            }
+        } catch(e) {
+            showPopup('Error', 'Server Error', '⚠️');
+        }
+    });
+
+  </script>
+</body>
+  </html>
